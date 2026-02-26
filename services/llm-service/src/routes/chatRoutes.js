@@ -25,6 +25,31 @@ try {
 
 console.log("Global compliance rules loaded, length:", globalComplianceRules.length);
 
+// Direct RAG retrieve endpoint (for frontend use)
+router.post('/retrieve', async (req, res) => {
+    try {
+        const { query, userId, k = 3 } = req.body;
+        console.log(`Direct retrieve endpoint called with query: ${query}`);
+        
+        if (!query) {
+            return res.status(400).json({ error: 'Query is required' });
+        }
+
+        const results = await pathwayService.query(query, userId, k);
+        
+        // Ensure it returns an array
+        if (Array.isArray(results)) {
+            return res.json(results);
+        }
+        
+        // If it's a string (error fallback), return empty array
+        return res.json([]);
+    } catch (error) {
+        console.error('Retrieve error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 router.post('/message', async (req, res) => {
     try {
         const { message, history, userId } = req.body;

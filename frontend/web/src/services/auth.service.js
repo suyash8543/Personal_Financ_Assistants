@@ -8,12 +8,17 @@ const register = async (userData) => {
     return response.data;
 };
 
-const login = async (userData) => {
-    const response = await api.post('/auth/login', userData);
-    if (response.data.token) {
-        localStorage.setItem('token', response.data.token);
+const login = async (credentials) => {
+    try {
+        const response = await api.post('/auth/login', credentials);
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+        }
+        return response.data;
+    } catch (error) {
+        console.error('Login error:', error.response?.data || error.message);
+        throw error;
     }
-    return response.data;
 };
 
 const logout = () => {

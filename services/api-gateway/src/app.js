@@ -14,7 +14,16 @@ const TRANSACTION_SERVICE_URL = process.env.TRANSACTION_SERVICE_URL || 'http://l
 const COMPLIANCE_SERVICE_URL = process.env.COMPLIANCE_SERVICE_URL || 'http://localhost:3005';
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || 'http://localhost:3006';
 
-app.use(cors());
+// Enhanced CORS configuration to support frontend from any origin
+const corsOptions = {
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 
 // Health check
@@ -40,6 +49,15 @@ app.use('/api/user-data', createProxyMiddleware({
 app.use('/api/chat', createProxyMiddleware({
     target: LLM_SERVICE_URL,
     changeOrigin: true,
+}));
+
+// Direct RAG retrieve endpoint (also proxies to LLM service)
+app.use('/api/retrieve', createProxyMiddleware({
+    target: LLM_SERVICE_URL,
+    changeOrigin: true,
+    pathRewrite: {
+        '^/api/retrieve': '/api/chat/retrieve'
+    }
 }));
 
 // Transaction Service
